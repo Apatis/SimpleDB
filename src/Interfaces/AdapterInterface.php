@@ -27,7 +27,6 @@ namespace Apatis\SimpleDB\Interfaces;
 
 use Apatis\SimpleDB\Abstracts\AdapterAbstract;
 
-
 /**
  * Interface AdapterInterface
  * @package Apatis\SimpleDB\Interfaces

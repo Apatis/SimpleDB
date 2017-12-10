@@ -216,13 +216,13 @@ abstract class AdapterAbstract implements AdapterInterface
                 } elseif (isset($options[ConnectionInterface::DB_NAME])) {
                     $path = $options[ConnectionInterface::DB_NAME];
                 }
-                if ( ! $path) {
+                if (! $path) {
                     throw new InvalidConfigurationExceptions(
                         'Database path for driver `sqlite` must be set',
                         E_USER_NOTICE
                     );
                 }
-                if ( ! is_string($path)) {
+                if (! is_string($path)) {
                     throw new InvalidConfigurationExceptions(
                         'Database path for driver `sqlite` is not valid',
                         E_USER_NOTICE
@@ -271,7 +271,7 @@ abstract class AdapterAbstract implements AdapterInterface
 
                 unset($options[ConnectionInterface::DB_UNIX_SOCKET]);
                 $uniqueSocket = $options[ConnectionInterface::DB_SOCKET];
-                if ( ! $options[ConnectionInterface::DB_SOCKET]) {
+                if (! $options[ConnectionInterface::DB_SOCKET]) {
                     $uniqueSocket = null;
                     unset($options[ConnectionInterface::DB_SOCKET]);
                 }
@@ -279,7 +279,7 @@ abstract class AdapterAbstract implements AdapterInterface
                     ? $this->defaultHost
                     : $options[ConnectionInterface::DB_HOST];
 
-                if ( ! $uniqueSocket && ( ! $host || ! is_string($host))) {
+                if (! $uniqueSocket && ( ! $host || ! is_string($host))) {
                     throw new InvalidConfigurationExceptions(
                         sprintf(
                             'Database `mysql` host must be as a string %s given',
@@ -297,7 +297,7 @@ abstract class AdapterAbstract implements AdapterInterface
 
                 if ($uniqueSocket) {
                     $dsn .= "unix_socket={$options[ConnectionInterface::DB_HOST]};";
-                } elseif ( ! isset($options[ConnectionInterface::DB_PORT])) {
+                } elseif (! isset($options[ConnectionInterface::DB_PORT])) {
                     // port
                     $options[ConnectionInterface::DB_PORT] = 3306;
                 }
@@ -317,7 +317,7 @@ abstract class AdapterAbstract implements AdapterInterface
                 $host = ! isset($options[ConnectionInterface::DB_HOST])
                     ? $this->defaultHost
                     : $options[ConnectionInterface::DB_HOST];
-                if ( ! $host) {
+                if (! $host) {
                     throw new InvalidConfigurationExceptions(
                         sprintf(
                             'Database `mysql` host must be as a string %s given',
@@ -328,7 +328,7 @@ abstract class AdapterAbstract implements AdapterInterface
 
                 $dsn                                   .= "host={$host};";
                 $options[ConnectionInterface::DB_HOST] = $host;
-                if ( ! isset($options[ConnectionInterface::DB_PORT])
+                if (! isset($options[ConnectionInterface::DB_PORT])
                      || ! $options[ConnectionInterface::DB_PORT]
                 ) {
                     $options[ConnectionInterface::DB_PORT] = 5432;
@@ -385,7 +385,7 @@ abstract class AdapterAbstract implements AdapterInterface
      */
     final protected function configureOptions()
     {
-        if ( ! $this->dsn) {
+        if (! $this->dsn) {
             $detail           = $this->configureDsn($this->options);
             $this->dsn        = $detail['dsn'];
             $this->options    = $detail['options'];

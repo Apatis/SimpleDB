@@ -82,7 +82,7 @@ class MySQL extends AdapterAbstract
             }
             $key = preg_replace_callback(
                 '/\s+([a-z])?/i',
-                function($c) {
+                function ($c) {
                     return isset($c[1]) ? strtoupper($c[1]) : '';
                 },
                 strtolower($key)

@@ -74,7 +74,7 @@ class Db
      */
     public function connect(): Db
     {
-        if ( ! $this->adapter) {
+        if (! $this->adapter) {
             $this->adapter = $this->createAdapterConnection($this->originalOptions);
         }
 
@@ -105,7 +105,7 @@ class Db
                 'Database driver has not been set'
             );
         }
-        if ( ! is_string($adapterName)) {
+        if (! is_string($adapterName)) {
             throw new InvalidConfigurationExceptions(
                 sprintf(
                     'Database driver must be as a string %s given',
@@ -115,7 +115,7 @@ class Db
         }
         $oldDriver   = $adapterName;
         $adapterName = $this->normalizeAdapter($adapterName);
-        if ( ! $adapterName || ! isset(self::$adapters[$adapterName])) {
+        if (! $adapterName || ! isset(self::$adapters[$adapterName])) {
             throw new InvalidConfigurationExceptions(
                 sprintf(
                     'Database driver %s is not exists',
@@ -152,7 +152,7 @@ class Db
         `xi', $adapter, $match);
         $adapter = null;
         foreach ($match as $key => $value) {
-            if ( ! is_int($key) && ! empty($value)) {
+            if (! is_int($key) && ! empty($value)) {
                 $adapter = $key;
                 break;
             }
