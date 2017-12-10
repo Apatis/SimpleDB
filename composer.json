@@ -1,0 +1,16 @@
+{
+    "name": "apatis/simple-db",
+    "description": "Simple database abstractions",
+    "license": "MIT",
+    "require": {
+        "php": ">= 7.0",
+        "ext-pdo": "*"
+    },
+    "require-dev": {
+    },
+    "autoload": {
+        "psr-4": {
+            "Apatis\\SimpleDB\\": "src/"
+        }
+    }
+}
