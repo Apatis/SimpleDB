@@ -2,7 +2,7 @@
 /**
  * MIT License
  *
- * Copyright (c) 2017, Pentagonal Development
+ * Copyright (c) 2017 Pentagonal Development
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,6 @@
 
 namespace Apatis\SimpleDB\Abstracts;
 
-use Apatis\SimpleDB\Connection;
 use Apatis\SimpleDB\Exceptions\InvalidConfigurationExceptions;
 use Apatis\SimpleDB\Interfaces\ConnectionInterface;
 use Apatis\SimpleDB\Interfaces\AdapterInterface;
@@ -47,7 +46,7 @@ abstract class AdapterAbstract implements AdapterInterface
     /**
      * @type string
      */
-    const ADAPTER_NAME = null;
+    const DRIVER_NAME = null;
 
     /**
      * @var string
@@ -62,7 +61,9 @@ abstract class AdapterAbstract implements AdapterInterface
     /**
      * @var array
      */
-    protected $options = [];
+    protected $options = [
+        'options' => null
+    ];
 
     /**
      * @var array
@@ -89,7 +90,7 @@ abstract class AdapterAbstract implements AdapterInterface
      */
     protected $info = [
         'persistent'       => false,
-        'driver'           => self::ADAPTER_NAME,
+        'driver'           => null,
         'database'         => null,
         'clientVersion'    => null,
         'serverVersion'    => null,
@@ -111,7 +112,8 @@ abstract class AdapterAbstract implements AdapterInterface
     public function __construct(array $options)
     {
         $this->originalOptions                   = $options;
-        $options[ConnectionInterface::DB_DRIVER] = $this->getAdapterName();
+        $options[ConnectionInterface::DB_DRIVER] = $this->getDriverName();
+        $this->info['driver']                    = static::DRIVER_NAME;
         $this->options                           = $options;
     }
 
@@ -121,6 +123,10 @@ abstract class AdapterAbstract implements AdapterInterface
     public function isConnected() : bool
     {
         $connection = $this->getConnection();
+        if (!$connection) {
+            return false;
+        }
+
         $mode = $connection->getAttribute(\PDO::ATTR_ERRMODE);
         try {
             if ($mode !== \PDO::ERRMODE_EXCEPTION) {
@@ -135,6 +141,7 @@ abstract class AdapterAbstract implements AdapterInterface
             if ($mode !== \PDO::ERRMODE_EXCEPTION) {
                 $connection->setAttribute(\PDO::ATTR_ERRMODE, $mode);
             }
+
             return false;
         }
 
@@ -142,51 +149,61 @@ abstract class AdapterAbstract implements AdapterInterface
     }
 
     /**
-     * @return AdapterAbstract
+     * {@inheritdoc}
      */
-    public function ping() : AdapterAbstract
+    public function connect() : AdapterAbstract
     {
-        $connection = $this->getConnection();
-        $mode = $connection->getAttribute(\PDO::ATTR_ERRMODE);
-        try {
-            if ($mode !== \PDO::ERRMODE_EXCEPTION) {
-                $connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            }
-
-            $connection->query($this->queryTestConnection);
-        } catch (\Exception $e) {
-            $this->connection = null;
-            $this->connection = $this->getConnection();
-            $connection = $this->connection;
+        if ($this->connection instanceof ConnectionInterface) {
+            return $this;
         }
 
-        if ($mode !== \PDO::ERRMODE_EXCEPTION) {
-            $connection->setAttribute(\PDO::ATTR_ERRMODE, $mode);
+        $this->connection = $this->createConnection();
+        $options = $this->getOption(ConnectionInterface::DB_OPTIONS, []);
+        foreach ($options as $key => $value) {
+            $this->connection->setAttribute($key, $value);
         }
 
         return $this;
     }
 
     /**
-     * @return ConnectionInterface|Connection
+     * {@inheritdoc}
      */
-    final public function getConnection(): ConnectionInterface
+    public function ping() : AdapterAbstract
     {
-        if (!$this->connection) {
-            $this->connection = new Connection(
-                $this->getDSN(),
-                $this->getOption(ConnectionInterface::DB_USER),
-                $this->getOption(ConnectionInterface::DB_PASS),
-                [],
-                $this
-            );
-
-            $options = $this->getOption(ConnectionInterface::DB_OPTIONS, []);
-            foreach ($options as $key => $value) {
-                $this->connection->setAttribute($key, $value);
+        $this->connect();
+        $mode = $this->connection->getAttribute(\PDO::ATTR_ERRMODE);
+        try {
+            if ($mode !== \PDO::ERRMODE_EXCEPTION) {
+                $this->connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             }
+
+            $this->connection->query($this->queryTestConnection);
+        } catch (\Exception $e) {
+            $this->connection = null;
+            $this->connection = $this->createConnection();
+            ;
         }
 
+        if ($mode !== \PDO::ERRMODE_EXCEPTION) {
+            $this->connection->setAttribute(\PDO::ATTR_ERRMODE, $mode);
+        }
+
+        return $this;
+    }
+
+    /**
+     * CreateAbstract standalone connection
+     *
+     * @return ConnectionInterface
+     */
+    abstract public function createConnection() : ConnectionInterface;
+
+    /**
+     * @return ConnectionInterface
+     */
+    final public function getConnection() : ConnectionInterface
+    {
         return $this->connection;
     }
 
@@ -197,9 +214,9 @@ abstract class AdapterAbstract implements AdapterInterface
      *
      * @return array The DSN. ['dsn' => string -> dsn, 'options' => (array) -> new options]
      */
-    protected function configureDsn(array $options): array
+    protected function configureDsn(array $options) : array
     {
-        $driver = strtolower($this->getAdapterName());
+        $driver = strtolower($this->getDriverName());
         if ($driver === '') {
             throw new InvalidConfigurationExceptions(
                 "Driver is empty or unknown",
@@ -340,7 +357,8 @@ abstract class AdapterAbstract implements AdapterInterface
                 if (isset($options[ConnectionInterface::DB_NAME])) {
                     $dsn .= "dbname={$options[ConnectionInterface::DB_NAME]};";
                 } else {
-                    // Used for temporary connections to allow operations like dropping the database currently connected to.
+                    // Used for temporary connections to allow operations like
+                    // dropping the database currently connected to.
                     // Connecting without an explicit database does not work, therefore "template1" database is used
                     // as it is certainly present in every server setup.
                     $dsn .= 'dbname=template1;';
@@ -358,6 +376,7 @@ abstract class AdapterAbstract implements AdapterInterface
         $optionsAttr = isset($options[ConnectionInterface::DB_OPTIONS])
             ? (array) $options[ConnectionInterface::DB_OPTIONS]
             : [];
+
         $options[ConnectionInterface::DB_OPTIONS] = $this->prepareOptions($optionsAttr);
         return [
             'dsn'     => $dsn,
@@ -373,10 +392,14 @@ abstract class AdapterAbstract implements AdapterInterface
     protected function prepareOptions(array $options) : array
     {
         unset($options[\PDO::ATTR_AUTOCOMMIT]);
-        $options[\PDO::ATTR_STATEMENT_CLASS] = [ Statement::class, [$this] ];
+        if (empty($options[\PDO::ATTR_PERSISTENT])) {
+            $options[\PDO::ATTR_STATEMENT_CLASS] = [Statement::class, [$this]];
+        }
+
         if (!isset($options[\PDO::ATTR_ERRMODE])) {
             $options[\PDO::ATTR_ERRMODE] = \PDO::ERRMODE_EXCEPTION;
         }
+
         return $options;
     }
 
@@ -398,7 +421,7 @@ abstract class AdapterAbstract implements AdapterInterface
     /**
      * @return string
      */
-    public function getDSN(): string
+    public function getDSN() : string
     {
         $this->configureOptions();
 
@@ -408,7 +431,7 @@ abstract class AdapterAbstract implements AdapterInterface
     /**
      * {@inheritdoc}
      */
-    public function getIdentifier(): string
+    public function getIdentifier() : string
     {
         return $this->identifier;
     }
@@ -416,23 +439,15 @@ abstract class AdapterAbstract implements AdapterInterface
     /**
      * {@inheritdoc}
      */
-    public function getAdapterName(): string
-    {
-        return static::ADAPTER_NAME;
-    }
-
-    /**
-     * @return string
-     */
     public function getDriverName() : string
     {
-        return $this->getConnection()->getAttribute(\PDO::ATTR_DRIVER_NAME);
+        return static::DRIVER_NAME;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getOptions(): array
+    public function getOptions() : array
     {
         $this->configureOptions();
 

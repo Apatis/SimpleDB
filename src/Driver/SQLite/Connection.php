@@ -23,64 +23,14 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace Apatis\SimpleDB\Driver\SQLite;
 
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+use Apatis\SimpleDB\Abstracts\ConnectionAbstract;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Class Connection
+ * @package Apatis\SimpleDB\Driver\SQLite
  */
-class Statement extends \PDOStatement
+class Connection extends ConnectionAbstract
 {
-    /**
-     * @var AdapterAbstract
-     */
-    private $adapter;
-
-    /**
-     * @var mixed
-     */
-    private $resultValue;
-
-    /**
-     * Statement constructor.
-     *
-     * @param AdapterAbstract $adapter
-     */
-    private function __construct(AdapterAbstract $adapter)
-    {
-        $this->adapter = $adapter;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function execute($input_parameter = null)
-    {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
-
-        return $this->resultValue;
-    }
-
-    /**
-     * @return AdapterInterface
-     */
-    public function getAdapter() : AdapterInterface
-    {
-        return $this->adapter;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getResultValue()
-    {
-        return $this->resultValue;
-    }
 }

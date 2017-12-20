@@ -23,64 +23,43 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace Apatis\SimpleDB\Driver\PgSQL\QueryBuilder;
 
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+use Apatis\SimpleDB\Abstracts\QueryBuilder\DeleteAbstract;
+use Apatis\SimpleDB\Interfaces\QueryBuilder\SelectInterface;
+use Apatis\SimpleDB\Interfaces\QueryBuilder\UpdateInterface;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Class DeleteAbstract
+ * @package Apatis\SimpleDB\Driver\PgSQL\QueryBuilder
  */
-class Statement extends \PDOStatement
+class Delete extends DeleteAbstract
 {
     /**
-     * @var AdapterAbstract
+     * {@inheritdoc}
      */
-    private $adapter;
-
-    /**
-     * @var mixed
-     */
-    private $resultValue;
-
-    /**
-     * Statement constructor.
-     *
-     * @param AdapterAbstract $adapter
-     */
-    private function __construct(AdapterAbstract $adapter)
+    public function toUpdate() : UpdateInterface
     {
-        $this->adapter = $adapter;
+        // TODO: Implement toUpdate() method.
+        $update = new Update(
+            $this->connection,
+            $this->getTable()
+        );
+
+        return $update;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function execute($input_parameter = null)
+    public function toSelect() : SelectInterface
     {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
-
-        return $this->resultValue;
-    }
-
-    /**
-     * @return AdapterInterface
-     */
-    public function getAdapter() : AdapterInterface
-    {
-        return $this->adapter;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getResultValue()
-    {
-        return $this->resultValue;
+        // TODO: Implement toSelect() method.
+        $select = new Select(
+            $this->connection,
+            $this->table,
+            ['*']
+        );
+        return $select;
     }
 }

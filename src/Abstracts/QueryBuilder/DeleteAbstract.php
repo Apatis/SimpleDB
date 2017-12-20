@@ -23,64 +23,37 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace Apatis\SimpleDB\Abstracts\QueryBuilder;
 
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+use Apatis\SimpleDB\Abstracts\ConditionalQueryAbstract;
+use Apatis\SimpleDB\Interfaces\ConnectionInterface;
+use Apatis\SimpleDB\Interfaces\QueryBuilder\DeleteInterface;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Class DeleteAbstract
+ * @package Apatis\SimpleDB\Abstracts\QueryBuilder
  */
-class Statement extends \PDOStatement
+abstract class DeleteAbstract extends ConditionalQueryAbstract implements DeleteInterface
 {
     /**
-     * @var AdapterAbstract
+     * @var string
      */
-    private $adapter;
+    protected $table;
 
     /**
-     * @var mixed
+     * {@inheritdoc}
      */
-    private $resultValue;
-
-    /**
-     * Statement constructor.
-     *
-     * @param AdapterAbstract $adapter
-     */
-    private function __construct(AdapterAbstract $adapter)
+    public function __construct(ConnectionInterface $connection, string $table)
     {
-        $this->adapter = $adapter;
+        $this->connection = $connection;
+        $this->table = $table;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function execute($input_parameter = null)
+    public function getTable() : string
     {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
-
-        return $this->resultValue;
-    }
-
-    /**
-     * @return AdapterInterface
-     */
-    public function getAdapter() : AdapterInterface
-    {
-        return $this->adapter;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getResultValue()
-    {
-        return $this->resultValue;
+        return $this->table;
     }
 }

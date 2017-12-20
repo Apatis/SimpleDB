@@ -23,64 +23,33 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace Apatis\SimpleDB\Interfaces\QueryBuilder;
 
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+use Apatis\SimpleDB\Interfaces\ConnectionInterface;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Interface CreateInterface
+ * @package Apatis\SimpleDB\Interfaces\QueryBuilder
  */
-class Statement extends \PDOStatement
+interface CreateInterface extends BaseQueryInterface
 {
     /**
-     * @var AdapterAbstract
-     */
-    private $adapter;
-
-    /**
-     * @var mixed
-     */
-    private $resultValue;
-
-    /**
-     * Statement constructor.
+     * CreateInterface constructor.
      *
-     * @param AdapterAbstract $adapter
+     * @param ConnectionInterface $connection
+     * @param string $table
      */
-    private function __construct(AdapterAbstract $adapter)
-    {
-        $this->adapter = $adapter;
-    }
+    public function __construct(ConnectionInterface $connection, string $table);
 
     /**
-     * {@inheritdoc}
+     * @param bool $ignore
+     *
+     * @return static|CreateInterface
      */
-    public function execute($input_parameter = null)
-    {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
-
-        return $this->resultValue;
-    }
+    public function ignore(bool $ignore) : CreateInterface;
 
     /**
-     * @return AdapterInterface
+     * @return bool
      */
-    public function getAdapter() : AdapterInterface
-    {
-        return $this->adapter;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getResultValue()
-    {
-        return $this->resultValue;
-    }
+    public function isIgnored() : bool;
 }

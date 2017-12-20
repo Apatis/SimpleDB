@@ -2,7 +2,7 @@
 /**
  * MIT License
  *
- * Copyright (c) 2017, Pentagonal Development
+ * Copyright (c) 2017 Pentagonal Development
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,41 @@
  * SOFTWARE.
  */
 
-namespace Apatis\SimpleDB\Adapter;
+namespace Apatis\SimpleDB\Driver\MySQL;
 
 use Apatis\SimpleDB\Abstracts\AdapterAbstract;
+use Apatis\SimpleDB\Exceptions\DriverNotSupportedException;
+use Apatis\SimpleDB\Interfaces\ConnectionInterface;
 
 /** @noinspection PhpHierarchyChecksInspection */
 /**
- * Class MySQL
+ * Class Adapter
  * @package Apatis\SimpleDB\Adapter
- * MySQL Adapter
+ * Adapter Adapter
  */
-class MySQL extends AdapterAbstract
+class Adapter extends AdapterAbstract
 {
     /**
      * @type string adapter / driver
      */
-    const ADAPTER_NAME = 'mysql';
+    const DRIVER_NAME = 'mysql';
 
     /**
      * {@inheritdoc}
      */
     protected $identifier = '`';
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $options)
+    {
+        if (!in_array(self::DRIVER_NAME, \PDO::getAvailableDrivers())) {
+            throw new DriverNotSupportedException(self::DRIVER_NAME);
+        }
+
+        parent::__construct($options);
+    }
 
     /**
      * @return null|string
@@ -56,7 +70,7 @@ class MySQL extends AdapterAbstract
     /**
      * {@inheritdoc}
      */
-    protected function prepareOptions(array $options): array
+    protected function prepareOptions(array $options) : array
     {
         $options = parent::prepareOptions($options);
         unset($options[\PDO::ATTR_AUTOCOMMIT]);
@@ -91,5 +105,19 @@ class MySQL extends AdapterAbstract
         }
 
         return $this->info;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createConnection() : ConnectionInterface
+    {
+        return new Connection(
+            $this->getDSN(),
+            $this->getOption(ConnectionInterface::DB_USER),
+            $this->getOption(ConnectionInterface::DB_PASS),
+            $this->getOption(ConnectionInterface::DB_OPTIONS, []),
+            $this
+        );
     }
 }

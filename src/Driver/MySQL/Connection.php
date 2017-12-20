@@ -23,64 +23,31 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace Apatis\SimpleDB\Driver\MySQL;
 
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+use Apatis\SimpleDB\Abstracts\ConnectionAbstract;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Class Connection
+ * @package Apatis\SimpleDB\Driver\MySQL
  */
-class Statement extends \PDOStatement
+class Connection extends ConnectionAbstract
 {
-    /**
-     * @var AdapterAbstract
-     */
-    private $adapter;
+    const MYSQL_ATTR_USE_BUFFERED_QUERY = 1000;
+    const MYSQL_ATTR_LOCAL_INFILE = 1001;
+    const MYSQL_ATTR_INIT_COMMAND = 1002;
+    const MYSQL_ATTR_MAX_BUFFER_SIZE = 1005;
+    const MYSQL_ATTR_READ_DEFAULT_FILE = 1003;
+    const MYSQL_ATTR_READ_DEFAULT_GROUP = 1004;
+    const MYSQL_ATTR_COMPRESS = 1006;
+    const MYSQL_ATTR_DIRECT_QUERY = 1007;
+    const MYSQL_ATTR_FOUND_ROWS = 1008;
+    const MYSQL_ATTR_IGNORE_SPACE = 1009;
+    const MYSQL_ATTR_SSL_KEY = 1010;
+    const MYSQL_ATTR_SSL_CERT = 1011;
+    const MYSQL_ATTR_SSL_CA = 1012;
+    const MYSQL_ATTR_SSL_CAPATH = 1013;
+    const MYSQL_ATTR_SSL_CIPHER = 1014;
 
-    /**
-     * @var mixed
-     */
-    private $resultValue;
-
-    /**
-     * Statement constructor.
-     *
-     * @param AdapterAbstract $adapter
-     */
-    private function __construct(AdapterAbstract $adapter)
-    {
-        $this->adapter = $adapter;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function execute($input_parameter = null)
-    {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
-
-        return $this->resultValue;
-    }
-
-    /**
-     * @return AdapterInterface
-     */
-    public function getAdapter() : AdapterInterface
-    {
-        return $this->adapter;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getResultValue()
-    {
-        return $this->resultValue;
-    }
+    const MYSQL_ATTR_MULTI_STATEMENTS = 1015;
 }

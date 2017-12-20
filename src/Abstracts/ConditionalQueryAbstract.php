@@ -23,64 +23,70 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace Apatis\SimpleDB\Abstracts;
 
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+use Apatis\SimpleDB\Interfaces\QueryBuilder\ConditionalQueryInterface;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Class ConditionalQueryAbstract
+ * @package Apatis\SimpleDB\Abstracts
  */
-class Statement extends \PDOStatement
+abstract class ConditionalQueryAbstract extends BaseQueryAbstract implements ConditionalQueryInterface
 {
     /**
-     * @var AdapterAbstract
+     * @var array|null
      */
-    private $adapter;
+    protected $where;
 
     /**
-     * @var mixed
+     * {@inheritdoc}
      */
-    private $resultValue;
-
-    /**
-     * Statement constructor.
-     *
-     * @param AdapterAbstract $adapter
-     */
-    private function __construct(AdapterAbstract $adapter)
+    public function where($statements, $value = null): ConditionalQueryInterface
     {
-        $this->adapter = $adapter;
+        // TODO: Implement where() method.
+        return $this;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function execute($input_parameter = null)
+    public function orWhere($statements, $value = null): ConditionalQueryInterface
     {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
-
-        return $this->resultValue;
+        // TODO: Implement orWhere() method.
+        return $this;
     }
 
     /**
-     * @return AdapterInterface
+     * {@inheritdoc}
      */
-    public function getAdapter() : AdapterInterface
+    public function andWhere($statements, $value = null): ConditionalQueryInterface
     {
-        return $this->adapter;
+        // TODO: Implement andWhere() method.
+        return $this;
     }
 
     /**
-     * @return mixed
+     * {@inheritdoc}
      */
-    public function getResultValue()
+    public function getWhere()
     {
-        return $this->resultValue;
+        return $this->where;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getWhereQuery()
+    {
+        // TODO: Implement getWhereQuery() method.
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clearWhere() : ConditionalQueryInterface
+    {
+        $this->where = null;
+        return $this;
     }
 }

@@ -23,64 +23,35 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
-
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+namespace Apatis\SimpleDB\Interfaces\QueryBuilder;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Interface QueryBuilderInterface
+ * @package Apatis\SimpleDB\Interfaces\QueryBuilder
  */
-class Statement extends \PDOStatement
+interface QueryBuilderInterface
 {
     /**
-     * @var AdapterAbstract
-     */
-    private $adapter;
-
-    /**
-     * @var mixed
-     */
-    private $resultValue;
-
-    /**
-     * Statement constructor.
+     * CreateAbstract SelectAbstract
      *
-     * @param AdapterAbstract $adapter
+     * @param array $select
+     * @param null|string $expression
+     *
+     * @return SelectInterface
      */
-    private function __construct(AdapterAbstract $adapter)
-    {
-        $this->adapter = $adapter;
-    }
+    public function select(array $select = ['*'], $expression = null) : SelectInterface;
 
     /**
-     * {@inheritdoc}
+     * @param string $table
+     *
+     * @return UpdateInterface
      */
-    public function execute($input_parameter = null)
-    {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
-
-        return $this->resultValue;
-    }
+    public function update(string $table) : UpdateInterface;
 
     /**
-     * @return AdapterInterface
+     * @param string $table
+     *
+     * @return DeleteInterface
      */
-    public function getAdapter() : AdapterInterface
-    {
-        return $this->adapter;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getResultValue()
-    {
-        return $this->resultValue;
-    }
+    public function delete(string $table) : DeleteInterface;
 }

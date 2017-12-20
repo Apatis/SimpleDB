@@ -23,64 +23,51 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace Apatis\SimpleDB\Abstracts\QueryBuilder;
 
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+use Apatis\SimpleDB\Abstracts\BaseQueryAbstract;
+use Apatis\SimpleDB\Interfaces\ConnectionInterface;
+use Apatis\SimpleDB\Interfaces\QueryBuilder\CreateInterface;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Class CreateAbstract
+ * @package Apatis\SimpleDB\Abstracts\QueryBuilder
  */
-class Statement extends \PDOStatement
+abstract class CreateAbstract extends BaseQueryAbstract implements CreateInterface
 {
     /**
-     * @var AdapterAbstract
+     * @var bool
      */
-    private $adapter;
+    protected $ignore = false;
 
     /**
-     * @var mixed
+     * @var string
      */
-    private $resultValue;
+    protected $table;
 
     /**
-     * Statement constructor.
-     *
-     * @param AdapterAbstract $adapter
+     * {@inheritdoc}
      */
-    private function __construct(AdapterAbstract $adapter)
+    public function __construct(ConnectionInterface $connection, string $table)
     {
-        $this->adapter = $adapter;
+        $this->connection = $connection;
+        $this->table = $table;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function execute($input_parameter = null)
+    public function ignore(bool $ignore): CreateInterface
     {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
-
-        return $this->resultValue;
+        $this->ignore = $ignore;
+        return $this;
     }
 
     /**
-     * @return AdapterInterface
+     * {@inheritdoc}
      */
-    public function getAdapter() : AdapterInterface
+    public function isIgnored() : bool
     {
-        return $this->adapter;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getResultValue()
-    {
-        return $this->resultValue;
+        return $this->ignore;
     }
 }

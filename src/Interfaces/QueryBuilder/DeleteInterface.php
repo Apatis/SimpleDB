@@ -23,64 +23,40 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace Apatis\SimpleDB\Interfaces\QueryBuilder;
 
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+use Apatis\SimpleDB\Interfaces\ConnectionInterface;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Interface DeleteInterface
+ * @package Apatis\SimpleDB\Interfaces\QueryBuilder
  */
-class Statement extends \PDOStatement
+interface DeleteInterface extends ConditionalQueryInterface
 {
     /**
-     * @var AdapterAbstract
-     */
-    private $adapter;
-
-    /**
-     * @var mixed
-     */
-    private $resultValue;
-
-    /**
-     * Statement constructor.
+     * DeleteInterface constructor.
      *
-     * @param AdapterAbstract $adapter
+     * @param ConnectionInterface $connection
+     * @param string $table
      */
-    private function __construct(AdapterAbstract $adapter)
-    {
-        $this->adapter = $adapter;
-    }
+    public function __construct(ConnectionInterface $connection, string $table);
 
     /**
-     * {@inheritdoc}
+     * @return string
      */
-    public function execute($input_parameter = null)
-    {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
-
-        return $this->resultValue;
-    }
+    public function getTable() : string;
 
     /**
-     * @return AdapterInterface
+     * Convert To UpdateAbstract
+     *
+     * @return UpdateInterface
      */
-    public function getAdapter() : AdapterInterface
-    {
-        return $this->adapter;
-    }
+    public function toUpdate() : UpdateInterface;
 
     /**
-     * @return mixed
+     * Convert to DeleteAbstract
+     *
+     * @return SelectInterface
      */
-    public function getResultValue()
-    {
-        return $this->resultValue;
-    }
+    public function toSelect() : SelectInterface;
 }

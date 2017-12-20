@@ -23,64 +23,71 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace Apatis\SimpleDB\Abstracts\QueryBuilder;
 
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+use Apatis\SimpleDB\Abstracts\ConditionalQueryAbstract;
+use Apatis\SimpleDB\Interfaces\ConnectionInterface;
+use Apatis\SimpleDB\Interfaces\QueryBuilder\DeleteInterface;
+use Apatis\SimpleDB\Interfaces\QueryBuilder\SelectInterface;
+use Apatis\SimpleDB\Interfaces\QueryBuilder\UpdateInterface;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Class UpdateAbstract
+ * @package Apatis\SimpleDB\Abstracts\QueryBuilder
  */
-class Statement extends \PDOStatement
+abstract class UpdateAbstract extends ConditionalQueryAbstract implements UpdateInterface
 {
     /**
-     * @var AdapterAbstract
+     * @var string
      */
-    private $adapter;
+    protected $table;
 
     /**
-     * @var mixed
+     * @var array
      */
-    private $resultValue;
+    protected $values = [];
 
     /**
-     * Statement constructor.
-     *
-     * @param AdapterAbstract $adapter
+     * {@inheritdoc}
      */
-    private function __construct(AdapterAbstract $adapter)
+    public function __construct(ConnectionInterface $connection, string $table)
     {
-        $this->adapter = $adapter;
+        $this->connection = $connection;
+        $this->table = $table;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function execute($input_parameter = null)
+    public function getTable() : string
     {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
-
-        return $this->resultValue;
+        return $this->table;
     }
 
     /**
-     * @return AdapterInterface
+     * {@inheritdoc}
      */
-    public function getAdapter() : AdapterInterface
+    public function setValue(string $column, $value) : UpdateInterface
     {
-        return $this->adapter;
+        $this->values[$column] = $value;
+        return $this;
     }
 
     /**
-     * @return mixed
+     * {@inheritdoc}
      */
-    public function getResultValue()
+    public function setValues(array $values) : UpdateInterface
     {
-        return $this->resultValue;
+        $this->values = $values;
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addValues(array $values) : UpdateInterface
+    {
+        $this->values = array_merge($this->values, $values);
+        return $this;
     }
 }

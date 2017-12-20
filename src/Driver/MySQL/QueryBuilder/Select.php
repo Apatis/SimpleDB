@@ -23,64 +23,64 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace Apatis\SimpleDB\Driver\MySQL\QueryBuilder;
 
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+use Apatis\SimpleDB\Abstracts\QueryBuilder\SelectAbstract;
+use Apatis\SimpleDB\Interfaces\QueryBuilder\DeleteInterface;
+use Apatis\SimpleDB\Interfaces\QueryBuilder\SelectInterface;
+use Apatis\SimpleDB\Interfaces\QueryBuilder\UpdateInterface;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Class SelectAbstract
+ * @package Apatis\SimpleDB\Driver\MySQL\QueryBuilder
  */
-class Statement extends \PDOStatement
+class Select extends SelectAbstract
 {
     /**
-     * @var AdapterAbstract
+     * {@inheritdoc}
      */
-    private $adapter;
-
-    /**
-     * @var mixed
-     */
-    private $resultValue;
-
-    /**
-     * Statement constructor.
-     *
-     * @param AdapterAbstract $adapter
-     */
-    private function __construct(AdapterAbstract $adapter)
+    public function getHavingQuery()
     {
-        $this->adapter = $adapter;
+        $having = '';
+        // TODO: Implement getHavingQuery() method.
+        return $having;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function execute($input_parameter = null)
+    public function asCount(string $alias = 'c') : SelectInterface
     {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
+        // TODO: Implement asCount() method.
+        $object = clone $this;
 
-        return $this->resultValue;
+        return $object;
     }
 
     /**
-     * @return AdapterInterface
+     * {@inheritdoc}
      */
-    public function getAdapter() : AdapterInterface
+    public function toUpdate() : UpdateInterface
     {
-        return $this->adapter;
+        // TODO: Implement toUpdate() method.
+        $update = new Update(
+            $this->connection,
+            $this->table
+        );
+
+        return $update;
     }
 
     /**
-     * @return mixed
+     * {@inheritdoc}
      */
-    public function getResultValue()
+    public function toDelete() : DeleteInterface
     {
-        return $this->resultValue;
+        // TODO: Implement toDelete() method.
+        $delete = new Delete(
+            $this->connection,
+            $this->getTable()
+        );
+        return $delete;
     }
 }

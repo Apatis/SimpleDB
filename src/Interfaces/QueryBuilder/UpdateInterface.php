@@ -23,64 +23,66 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace Apatis\SimpleDB\Interfaces\QueryBuilder;
 
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+use Apatis\SimpleDB\Interfaces\ConnectionInterface;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Interface UpdateInterface
+ * @package Apatis\SimpleDB\Interfaces\QueryBuilder
  */
-class Statement extends \PDOStatement
+interface UpdateInterface extends ConditionalQueryInterface
 {
     /**
-     * @var AdapterAbstract
-     */
-    private $adapter;
-
-    /**
-     * @var mixed
-     */
-    private $resultValue;
-
-    /**
-     * Statement constructor.
+     * UpdateInterface constructor.
      *
-     * @param AdapterAbstract $adapter
+     * @param ConnectionInterface $connection
+     * @param string $table
      */
-    private function __construct(AdapterAbstract $adapter)
-    {
-        $this->adapter = $adapter;
-    }
+    public function __construct(ConnectionInterface $connection, string $table);
 
     /**
-     * {@inheritdoc}
+     * @return string
      */
-    public function execute($input_parameter = null)
-    {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
-
-        return $this->resultValue;
-    }
+    public function getTable() : string;
 
     /**
-     * @return AdapterInterface
+     * Set Value
+     *
+     * @param string $column
+     * @param $value
+     *
+     * @return static|UpdateInterface
      */
-    public function getAdapter() : AdapterInterface
-    {
-        return $this->adapter;
-    }
+    public function setValue(string $column, $value) : UpdateInterface;
 
     /**
-     * @return mixed
+     * Override values
+     *
+     * @param array $values
+     *
+     * @return static|UpdateInterface
      */
-    public function getResultValue()
-    {
-        return $this->resultValue;
-    }
+    public function setValues(array $values) : UpdateInterface;
+
+    /**
+     * @param array $values
+     *
+     * @return static|UpdateInterface
+     */
+    public function addValues(array $values) : UpdateInterface;
+
+    /**
+     * Convert To SelectAbstract
+     *
+     * @return SelectInterface
+     */
+    public function toSelect() : SelectInterface;
+
+    /**
+     * Convert to DeleteAbstract
+     *
+     * @return DeleteInterface
+     */
+    public function toDelete() : DeleteInterface;
 }

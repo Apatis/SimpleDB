@@ -2,7 +2,7 @@
 /**
  * MIT License
  *
- * Copyright (c) 2017, Pentagonal Development
+ * Copyright (c) 2017 Pentagonal Development
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 namespace Apatis\SimpleDB\Interfaces;
 
 use Apatis\SimpleDB\Abstracts\AdapterAbstract;
+use Apatis\SimpleDB\Interfaces\QueryBuilder\QueryBuilderInterface;
 
 /**
  * Interface AdapterInterface
@@ -51,6 +52,15 @@ interface AdapterInterface
     public function getOption($name, $default = null);
 
     /**
+     * CreateAbstract connection / connect to database
+     *
+     * @return AdapterAbstract
+     */
+    public function connect() : AdapterAbstract;
+
+    /**
+     * Ping connection, create new connection if database has been disconnected
+     *
      * @return AdapterAbstract
      */
     public function ping() : AdapterAbstract;
@@ -61,14 +71,7 @@ interface AdapterInterface
     public function isConnected() : bool;
 
     /**
-     * Get Adapter name
-     *
-     * @return string
-     */
-    public function getAdapterName() : string;
-
-    /**
-     * Get driver name ( real driver name from do attribute )
+     * Get Driver name
      *
      * @return string
      */
@@ -97,7 +100,7 @@ interface AdapterInterface
     public function getIdentifier() : string;
 
     /**
-     * Clone connection and use new Connection from param
+     * Clone connection and use new ConnectionAbstract from param
      *
      * @param ConnectionInterface $connection
      *
@@ -109,4 +112,11 @@ interface AdapterInterface
      * @return string|null
      */
     public function getDbName();
+
+    /**
+     * CreateAbstract Query Builder
+     *
+     * @return QueryBuilderInterface
+     */
+    public function createQueryBuilder() : QueryBuilderInterface;
 }

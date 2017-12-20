@@ -2,7 +2,7 @@
 /**
  * MIT License
  *
- * Copyright (c) 2017, Pentagonal Development
+ * Copyright (c) 2017 Pentagonal Development
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,25 @@
  * SOFTWARE.
  */
 
-namespace Apatis\SimpleDB\Adapter;
+namespace Apatis\SimpleDB\Driver\SQLite;
 
 use Apatis\SimpleDB\Abstracts\AdapterAbstract;
+use Apatis\SimpleDB\Exceptions\DriverNotSupportedException;
+use Apatis\SimpleDB\Interfaces\ConnectionInterface;
 
 /** @noinspection PhpHierarchyChecksInspection */
 /**
- * Class SQLite
+ * Class Adapter
  * @package Apatis\SimpleDB\Adapter
  *
- * SQLite Adapter
+ * Adapter Adapter
  */
-class SQLite extends AdapterAbstract
+class Adapter extends AdapterAbstract
 {
     /**
      * @type string adapter / driver
      */
-    const ADAPTER_NAME = 'sqlite';
+    const DRIVER_NAME = 'sqlite';
 
     /**
      * {@inheritdoc}
@@ -49,10 +51,36 @@ class SQLite extends AdapterAbstract
     /**
      * {@inheritdoc}
      */
+    public function __construct(array $options)
+    {
+        if (!in_array(self::DRIVER_NAME, \PDO::getAvailableDrivers())) {
+            throw new DriverNotSupportedException(self::DRIVER_NAME);
+        }
+
+        parent::__construct($options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function prepareOptions(array $options): array
     {
         $options = parent::prepareOptions($options);
         unset($options[\PDO::ATTR_AUTOCOMMIT]);
         return $options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createConnection() : ConnectionInterface
+    {
+        return new Connection(
+            $this->getDSN(),
+            $this->getOption(ConnectionInterface::DB_USER),
+            $this->getOption(ConnectionInterface::DB_PASS),
+            $this->getOption(ConnectionInterface::DB_OPTIONS, []),
+            $this
+        );
     }
 }

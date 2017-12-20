@@ -2,7 +2,7 @@
 /**
  * MIT License
  *
- * Copyright (c) 2017, Pentagonal Development
+ * Copyright (c) 2017 Pentagonal Development
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,42 @@
  * SOFTWARE.
  */
 
-namespace Apatis\SimpleDB\Adapter;
+namespace Apatis\SimpleDB\Driver\PgSQL;
 
 use Apatis\SimpleDB\Abstracts\AdapterAbstract;
+use Apatis\SimpleDB\Exceptions\DriverNotSupportedException;
+use Apatis\SimpleDB\Interfaces\ConnectionInterface;
 
 /** @noinspection PhpHierarchyChecksInspection */
 /**
- * Class PgSQL
+ * Class Adapter
  * @package Apatis\SimpleDB\Adapter
  *
  * PostGreSQL Adapter
  */
-class PgSQL extends AdapterAbstract
+class Adapter extends AdapterAbstract
 {
     /**
      * @type string adapter / driver
      */
-    const ADAPTER_NAME = 'pgsql';
+    const DRIVER_NAME = 'pgsql';
 
     /**
      * {@inheritdoc}
      */
     protected $identifier = '"';
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct(array $options)
+    {
+        if (!in_array(self::DRIVER_NAME, \PDO::getAvailableDrivers())) {
+            throw new DriverNotSupportedException(self::DRIVER_NAME);
+        }
+
+        parent::__construct($options);
+    }
 
     /**
      * @return null|string
@@ -97,5 +111,19 @@ class PgSQL extends AdapterAbstract
         }
 
         return $this->info;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createConnection() : ConnectionInterface
+    {
+        return new Connection(
+            $this->getDSN(),
+            $this->getOption(ConnectionInterface::DB_USER),
+            $this->getOption(ConnectionInterface::DB_PASS),
+            $this->getOption(ConnectionInterface::DB_OPTIONS, []),
+            $this
+        );
     }
 }

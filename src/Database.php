@@ -2,7 +2,7 @@
 /**
  * MIT License
  *
- * Copyright (c) 2017, Pentagonal Development
+ * Copyright (c) 2017 Pentagonal Development
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,36 @@
  * SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace Apatis\SimpleDB;
 
 use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Adapter\MySQL;
-use Apatis\SimpleDB\Adapter\PgSQL;
-use Apatis\SimpleDB\Adapter\SQLite;
+use Apatis\SimpleDB\Driver\MySQL\Adapter as MYSQL_ADAPTER;
+use Apatis\SimpleDB\Driver\SQLite\Adapter as SQLITE_ADAPTER;
+use Apatis\SimpleDB\Driver\PgSQL\Adapter as PG_ADAPTER;
+use Apatis\SimpleDB\Exceptions\DriverNotSupportedException;
 use Apatis\SimpleDB\Exceptions\InvalidConfigurationExceptions;
 use Apatis\SimpleDB\Interfaces\ConnectionInterface;
 
 /** @noinspection PhpHierarchyChecksInspection */
 /**
- * Class Db
+ * Class Database
  * @package Apatis\SimpleDB
  * @mixin AdapterAbstract
  */
-class Db
+class Database
 {
     /**
      * @var array
      */
-    protected static $adapters = [
-        'mysql'  => MySQL::class,
-        'pgsql'  => PgSQL::class,
-        'sqlite' => SQLite::class,
+    protected static $driversAdapter = [
+        'mysql'  => MYSQL_ADAPTER::class,
+        'pgsql'  => PG_ADAPTER::class,
+        'sqlite' => SQLITE_ADAPTER::class,
+        'oci'    => null,
+        'sqlsrv' => null,
+        'ibm'    => null,
     ];
 
     /**
@@ -60,7 +66,7 @@ class Db
     private $originalOptions;
 
     /**
-     * Db constructor.
+     * Database constructor.
      *
      * @param array $options
      */
@@ -70,9 +76,19 @@ class Db
     }
 
     /**
-     * @return Db
+     * Get available drivers
+     *
+     * @return array
      */
-    public function connect(): Db
+    public static function getAvailableDrivers() : array
+    {
+        return array_keys(static::$driversAdapter);
+    }
+
+    /**
+     * @return Database
+     */
+    public function connect() : Database
     {
         if (! $this->adapter) {
             $this->adapter = $this->createAdapterConnection($this->originalOptions);
@@ -85,53 +101,52 @@ class Db
      * @param array $options
      *
      * @return AdapterAbstract
+     * @throws InvalidConfigurationExceptions
+     * @throws DriverNotSupportedException if driver is not supported
      */
-    private function createAdapterConnection(array $options): AdapterAbstract
+    private function createAdapterConnection(array $options) : AdapterAbstract
     {
-        $adapterName = ! isset($options[ConnectionInterface::DB_DRIVER])
+        $driverName = ! isset($options[ConnectionInterface::DB_DRIVER])
             ? null
             : $options[ConnectionInterface::DB_DRIVER];
         // check adapter as key name if driver does not exists
-        if ($adapterName === null && isset($options['adapter'])) {
+        if ($driverName === null && isset($options['adapter'])) {
             $tmpDriver = $options['adapter'];
-            if (is_string($tmpDriver) && ($tmpDriver = $this->normalizeAdapter($tmpDriver))) {
-                $adapterName = $tmpDriver;
+            if (is_string($tmpDriver) && ($tmpDriver = $this->normalizeDriver($tmpDriver))) {
+                $driverName = $tmpDriver;
                 unset($tmpDriver);
             }
         }
 
-        if ($adapterName === null) {
+        if ($driverName === null) {
             throw new InvalidConfigurationExceptions(
                 'Database driver has not been set'
             );
         }
-        if (! is_string($adapterName)) {
+
+        if (! is_string($driverName)) {
             throw new InvalidConfigurationExceptions(
                 sprintf(
                     'Database driver must be as a string %s given',
-                    gettype($adapterName)
-                )
-            );
-        }
-        $oldDriver   = $adapterName;
-        $adapterName = $this->normalizeAdapter($adapterName);
-        if (! $adapterName || ! isset(self::$adapters[$adapterName])) {
-            throw new InvalidConfigurationExceptions(
-                sprintf(
-                    'Database driver %s is not exists',
-                    $oldDriver
+                    gettype($driverName)
                 )
             );
         }
 
-        $adapterClass                            = self::$adapters[$adapterName];
-        $options[ConnectionInterface::DB_DRIVER] = $adapterName;
+        $oldDriver   = $driverName;
+        $driverName = $this->normalizeDriver($driverName);
+        if (! $driverName || ! isset(self::$driversAdapter[$driverName])) {
+            throw new DriverNotSupportedException($oldDriver);
+        }
+
+        $adapterClass                            = self::$driversAdapter[$driverName];
+        $options[ConnectionInterface::DB_DRIVER] = $driverName;
 
         /**
          * @var AdapterAbstract $adapter
          */
         $adapter = new $adapterClass($options);
-        $adapter->getConnection();
+        $adapter->connect();
 
         return $adapter;
     }
@@ -143,12 +158,18 @@ class Db
      *
      * @return null|string
      */
-    public function normalizeAdapter(string $adapter)
+    public function normalizeDriver(string $adapter)
     {
         preg_match('`
             (?P<pgsql>(?:pgsql|postg))
             | (?P<sqlite>s?q?lite)
             | (?P<mysql>sql)
+
+            # add for future driver
+            | (?P<odbc>odbc)
+            | (?P<ibm>db2|ibm)
+            | (?P<sqlsrv>srv|mssql)
+            | (?P<oci>oci)
         `xi', $adapter, $match);
         $adapter = null;
         foreach ($match as $key => $value) {
@@ -166,7 +187,7 @@ class Db
      *
      * @return AdapterAbstract
      */
-    public function withConnection(ConnectionInterface $connection): AdapterAbstract
+    public function withConnection(ConnectionInterface $connection) : AdapterAbstract
     {
         $object          = clone $this;
         $object->adapter = $this->adapter->withConnection($connection);
@@ -177,7 +198,7 @@ class Db
     /**
      * @return AdapterAbstract
      */
-    public function getAdapter(): AdapterAbstract
+    public function getAdapter() : AdapterAbstract
     {
         return $this->connect()->adapter;
     }

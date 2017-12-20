@@ -23,64 +23,58 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
-
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+namespace Apatis\SimpleDB\Interfaces\QueryBuilder;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Interface ConditionalQueryInterface
+ * @package Apatis\SimpleDB\Interfaces\QueryBuilder
  */
-class Statement extends \PDOStatement
+interface ConditionalQueryInterface extends BaseQueryInterface
 {
     /**
-     * @var AdapterAbstract
-     */
-    private $adapter;
-
-    /**
-     * @var mixed
-     */
-    private $resultValue;
-
-    /**
-     * Statement constructor.
+     * Add where clause
      *
-     * @param AdapterAbstract $adapter
+     * @param string|array $statements
+     * @param mixed $value
+     *
+     * @return static|ConditionalQueryInterface
      */
-    private function __construct(AdapterAbstract $adapter)
-    {
-        $this->adapter = $adapter;
-    }
+    public function where($statements, $value = null) : ConditionalQueryInterface;
 
     /**
-     * {@inheritdoc}
+     * Add or where statements
+     *
+     * @param string|array
+     * @param mixed $value
+     *
+     * @return static|ConditionalQueryInterface
      */
-    public function execute($input_parameter = null)
-    {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
-
-        return $this->resultValue;
-    }
+    public function orWhere($statements, $value = null) : ConditionalQueryInterface;
 
     /**
-     * @return AdapterInterface
+     * Add and Where statement
+     *
+     * @param string|array $statements
+     * @param null $value
+     *
+     * @return static|ConditionalQueryInterface
      */
-    public function getAdapter() : AdapterInterface
-    {
-        return $this->adapter;
-    }
+    public function andWhere($statements, $value = null) : ConditionalQueryInterface;
 
     /**
-     * @return mixed
+     * @return array|null
      */
-    public function getResultValue()
-    {
-        return $this->resultValue;
-    }
+    public function getWhere();
+
+    /**
+     * @return string|null
+     */
+    public function getWhereQuery();
+
+    /**
+     * Clear The where statements
+     *
+     * @return static|ConditionalQueryInterface
+     */
+    public function clearWhere() : ConditionalQueryInterface;
 }

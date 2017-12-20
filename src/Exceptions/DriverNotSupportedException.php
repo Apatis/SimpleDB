@@ -23,64 +23,26 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
-
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+namespace Apatis\SimpleDB\Exceptions;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Class DriverNotSupportedException
+ * @package Apatis\SimpleDB\Exceptions
  */
-class Statement extends \PDOStatement
+class DriverNotSupportedException extends \RuntimeException
 {
     /**
-     * @var AdapterAbstract
-     */
-    private $adapter;
-
-    /**
-     * @var mixed
-     */
-    private $resultValue;
-
-    /**
-     * Statement constructor.
+     * DriverNotSupportedException constructor.
      *
-     * @param AdapterAbstract $adapter
+     * @param string $driver
      */
-    private function __construct(AdapterAbstract $adapter)
+    public function __construct(string $driver)
     {
-        $this->adapter = $adapter;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function execute($input_parameter = null)
-    {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
-
-        return $this->resultValue;
-    }
-
-    /**
-     * @return AdapterInterface
-     */
-    public function getAdapter() : AdapterInterface
-    {
-        return $this->adapter;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getResultValue()
-    {
-        return $this->resultValue;
+        parent::__construct(
+            sprintf(
+                'Driver %s is not supported',
+                $driver
+            )
+        );
     }
 }

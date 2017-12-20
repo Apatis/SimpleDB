@@ -23,64 +23,42 @@
  * SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace Apatis\SimpleDB\Driver\PgSQL\QueryBuilder;
 
-namespace Apatis\SimpleDB;
-
-use Apatis\SimpleDB\Abstracts\AdapterAbstract;
-use Apatis\SimpleDB\Interfaces\AdapterInterface;
+use Apatis\SimpleDB\Abstracts\QueryBuilder\UpdateAbstract;
+use Apatis\SimpleDB\Interfaces\QueryBuilder\DeleteInterface;
+use Apatis\SimpleDB\Interfaces\QueryBuilder\SelectInterface;
 
 /**
- * Class Statement
- * @package Apatis\SimpleDB
+ * Class UpdateAbstract
+ * @package Apatis\SimpleDB\Driver\PgSQL\QueryBuilder
  */
-class Statement extends \PDOStatement
+class Update extends UpdateAbstract
 {
     /**
-     * @var AdapterAbstract
+     * {@inheritdoc}
      */
-    private $adapter;
-
-    /**
-     * @var mixed
-     */
-    private $resultValue;
-
-    /**
-     * Statement constructor.
-     *
-     * @param AdapterAbstract $adapter
-     */
-    private function __construct(AdapterAbstract $adapter)
+    public function toSelect(): SelectInterface
     {
-        $this->adapter = $adapter;
+        // TODO: Implement toSelect() method.
+        $select = new Select(
+            $this->connection,
+            $this->getTable(),
+            ['*']
+        );
+        return $select;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function execute($input_parameter = null)
+    public function toDelete(): DeleteInterface
     {
-        $this->resultValue = func_num_args() !== 0
-            ? parent::execute($input_parameter)
-            : parent::execute();
-
-        return $this->resultValue;
-    }
-
-    /**
-     * @return AdapterInterface
-     */
-    public function getAdapter() : AdapterInterface
-    {
-        return $this->adapter;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getResultValue()
-    {
-        return $this->resultValue;
+        // TODO: Implement toDelete() method.
+        $select = new Delete(
+            $this->connection,
+            $this->getTable()
+        );
+        return $select;
     }
 }
