@@ -189,8 +189,10 @@ class Database
      */
     public function withConnection(ConnectionInterface $connection) : AdapterAbstract
     {
+        // clone new object
         $object          = clone $this;
-        $object->adapter = $this->adapter->withConnection($connection);
+        // set new adapter
+        $object->adapter = $connection->getAdapter();
 
         return $object;
     }
